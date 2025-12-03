@@ -1,0 +1,331 @@
+<!DOCTYPE html> <html lang="en"> <head> <meta charset="UTF-8" /> <title>UK Personal Investment Assistant</title> <meta name="viewport" content="width=device-width, initial-scale=1" /> <link rel="stylesheet" href="style.css" /> <!-- Chart.js CDN --> <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> </head> <body> <header class="app-header"> <div class="header-content"> <h1>UK Personal Investment Assistant</h1> <p>Interactive projections, tax breakdowns, and allocation guidance for UK investors (not regulated advice).</p> </div> </header> <main class="app-main"> <!-- LEFT: INPUTS PANEL --> <section class="inputs-panel card"> <h2>Inputs</h2> <form id="inputs-form"> <!-- Group 1: Personal Profile --> <div class="input-group"> <h3>Personal Profile</h3> <label> Age <input type="number" id="age" min="18" value="22" /> </label>
+      <label>
+        Country / Region
+        <select id="region">
+          <option value="england">England / Wales</option>
+          <option value="scotland">Scotland</option>
+          <option value="ni">Northern Ireland</option>
+        </select>
+      </label>
+
+      <label>
+        Gross annual income (£)
+        <input type="number" id="grossIncome" min="0" step="100" value="30000" />
+      </label>
+
+      <label>
+        Student loan plan
+        <select id="studentLoanPlan">
+          <option value="none">None</option>
+          <option value="plan1">Plan 1</option>
+          <option value="plan2" selected>Plan 2</option>
+          <option value="plan4">Plan 4</option>
+          <option value="plan5">Plan 5</option>
+          <option value="postgrad">Postgraduate loan</option>
+        </select>
+      </label>
+
+      <label>
+        Employment type
+        <select id="employmentType">
+          <option value="employed" selected>Employed</option>
+          <option value="selfEmployed">Self employed</option>
+          <option value="student">Student</option>
+          <option value="other">Other</option>
+        </select>
+      </label>
+    </div>
+
+    <!-- Group 2: Monthly Cash Flow -->
+    <div class="input-group">
+      <h3>Monthly Cash Flow</h3>
+      <label>
+        Monthly amount you can invest or save (£)
+        <input type="number" id="monthlyInvest" min="0" step="10" value="500" />
+      </label>
+
+      <label>
+        Current liquid savings (£)
+        <input type="number" id="currentSavings" min="0" step="100" value="2000" />
+      </label>
+
+      <label>
+        Target emergency fund (months of expenses)
+        <input type="number" id="emergencyMonths" min="0" step="0.5" value="3" />
+      </label>
+    </div>
+
+    <!-- Group 3: Pension and Tax Wrappers -->
+    <div class="input-group">
+      <h3>Pension and Tax Wrappers</h3>
+      <label>
+        Employee pension contribution (% of gross salary)
+        <input type="number" id="employeePensionPct" min="0" max="100" step="0.5" value="5" />
+      </label>
+
+      <label>
+        Employer pension contribution (% of gross salary)
+        <input type="number" id="employerPensionPct" min="0" max="100" step="0.5" value="3" />
+      </label>
+
+      <label class="checkbox-label">
+        <input type="checkbox" id="salarySacrifice" />
+        Use salary sacrifice
+      </label>
+
+      <label>
+        Monthly ISA contribution (£)
+        <input type="number" id="monthlyISA" min="0" step="10" value="200" />
+      </label>
+
+      <label class="checkbox-label">
+        <input type="checkbox" id="useLISA" />
+        Use Lifetime ISA for first home
+      </label>
+
+      <label>
+        Current pension pot value (£)
+        <input type="number" id="currentPension" min="0" step="500" value="0" />
+      </label>
+
+      <label>
+        Current ISA portfolio value (£)
+        <input type="number" id="currentISA" min="0" step="500" value="0" />
+      </label>
+    </div>
+
+    <!-- Group 4: Goals -->
+    <div class="input-group">
+      <h3>Goals</h3>
+      <label>
+        Years until first house deposit goal
+        <input type="number" id="yearsToHouse" min="1" value="5" />
+      </label>
+
+      <label>
+        Target house deposit (£)
+        <input type="number" id="targetHouseDeposit" min="0" step="1000" value="20000" />
+      </label>
+
+      <label>
+        Target retirement age
+        <input type="number" id="retirementAge" min="40" max="80" value="65" />
+      </label>
+
+      <label>
+        Desired annual income in retirement (today’s £)
+        <input type="number" id="desiredRetIncome" min="0" step="1000" value="25000" />
+      </label>
+    </div>
+
+    <!-- Group 5: Risk Profile -->
+    <div class="input-group">
+      <h3>Risk Profile</h3>
+      <label>
+        Risk tolerance
+        <select id="riskTolerance">
+          <option value="low">Low</option>
+          <option value="medium" selected>Medium</option>
+          <option value="mediumHigh">Medium high</option>
+          <option value="high">High</option>
+        </select>
+      </label>
+
+      <label>
+        How would you react to a 20% drop in your investments?
+        <select id="drawdownReaction">
+          <option value="panic">Panic and sell</option>
+          <option value="uncomfortable" selected>Uncomfortable but stay invested</option>
+          <option value="opportunity">See it as an opportunity</option>
+        </select>
+      </label>
+    </div>
+
+    <div class="input-actions">
+      <button type="button" id="recalculateBtn" class="primary-btn">Recalculate</button>
+    </div>
+  </form>
+
+  <p class="disclaimer">
+    This tool is for educational and illustrative purposes only and does not constitute regulated financial advice.
+    Always consider seeking advice from a regulated adviser before making major financial decisions.
+  </p>
+</section>
+
+<!-- RIGHT: RESULTS PANEL -->
+<section class="results-panel card">
+  <!-- Tabs -->
+  <div class="tabs">
+    <button class="tab-btn active" data-tab-target="overview-tab">Overview</button>
+    <button class="tab-btn" data-tab-target="projections-tab">Projections</button>
+    <button class="tab-btn" data-tab-target="tax-tab">Tax &amp; Pension</button>
+    <button class="tab-btn" data-tab-target="scenarios-tab">Scenarios</button>
+    <button class="tab-btn" data-tab-target="settings-tab">Settings / Assumptions</button>
+  </div>
+
+  <!-- Tab Panels -->
+  <div class="tab-panels">
+    <!-- Overview Tab -->
+    <div id="overview-tab" class="tab-panel active">
+      <h2>Overview</h2>
+      <div id="overviewSummary" class="summary-block"></div>
+
+      <div class="chart-row">
+        <div class="chart-card">
+          <h3>Recommended Allocation Range</h3>
+          <canvas id="allocationChart"></canvas>
+        </div>
+        <div class="chart-card">
+          <h3>Allocation Example (Midpoint)</h3>
+          <canvas id="allocationExampleChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Projections Tab -->
+    <div id="projections-tab" class="tab-panel">
+      <h2>Projections</h2>
+      <div id="projectionsSummary" class="summary-block"></div>
+      <div class="chart-row">
+        <div class="chart-card full-width">
+          <h3>Net Worth Over Time</h3>
+          <canvas id="netWorthChart"></canvas>
+        </div>
+      </div>
+      <div class="chart-row">
+        <div class="chart-card full-width">
+          <h3>Pension vs ISA vs Cash</h3>
+          <canvas id="bucketChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tax & Pension Tab -->
+    <div id="tax-tab" class="tab-panel">
+      <h2>Tax &amp; Pension</h2>
+      <div id="taxSummary" class="summary-block"></div>
+
+      <div class="table-wrapper">
+        <table id="taxTable">
+          <thead>
+            <tr>
+              <th>Item</th>
+              <th>Annual (£)</th>
+              <th>Monthly (£)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Populated by JS -->
+          </tbody>
+        </table>
+      </div>
+
+      <div class="chart-row">
+        <div class="chart-card full-width">
+          <h3>Income Allocation</h3>
+          <canvas id="incomePieChart"></canvas>
+        </div>
+      </div>
+
+      <p class="note">
+        All figures are estimates for illustration only and may not match your actual tax or pension outcomes.
+      </p>
+    </div>
+
+    <!-- Scenarios Tab -->
+    <div id="scenarios-tab" class="tab-panel">
+      <h2>Scenarios</h2>
+      <div class="scenario-controls">
+        <div class="scenario-block">
+          <h3>Scenario A (Base)</h3>
+          <p>Uses your main inputs from the left panel.</p>
+        </div>
+
+        <div class="scenario-block">
+          <h3>Scenario B (Adjusted)</h3>
+          <label>
+            Monthly invest / save (£)
+            <input type="number" id="scenarioBMonthlyInvest" min="0" step="10" value="600" />
+          </label>
+          <label>
+            Employee pension contribution (%)
+            <input type="number" id="scenarioBEmployeePensionPct" min="0" max="100" step="0.5" value="7" />
+          </label>
+          <label>
+            Risk tolerance
+            <select id="scenarioBRiskTolerance">
+              <option value="low">Low</option>
+              <option value="medium" selected>Medium</option>
+              <option value="mediumHigh">Medium high</option>
+              <option value="high">High</option>
+            </select>
+          </label>
+          <button type="button" id="recalculateScenariosBtn" class="secondary-btn">
+            Recalculate Scenarios
+          </button>
+        </div>
+      </div>
+
+      <div id="scenariosSummary" class="summary-block"></div>
+
+      <div class="chart-row">
+        <div class="chart-card full-width">
+          <h3>Scenario Comparison: Net Worth Over Time</h3>
+          <canvas id="scenarioComparisonChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Settings / Assumptions Tab -->
+    <div id="settings-tab" class="tab-panel">
+      <h2>Settings / Assumptions</h2>
+      <form id="settings-form" class="settings-grid">
+        <div class="settings-group">
+          <h3>Expected Annual Returns</h3>
+          <label>
+            Global equity (%)
+            <input type="number" id="retEquity" step="0.1" value="6.0" />
+          </label>
+          <label>
+            Bonds (%)
+            <input type="number" id="retBonds" step="0.1" value="3.0" />
+          </label>
+          <label>
+            Cash (%)
+            <input type="number" id="retCash" step="0.1" value="1.0" />
+          </label>
+          <label>
+            REITs (%)
+            <input type="number" id="retREITs" step="0.1" value="4.5" />
+          </label>
+          <label>
+            Crypto (%)
+            <input type="number" id="retCrypto" step="0.1" value="12.0" />
+          </label>
+        </div>
+
+        <div class="settings-group">
+          <h3>Macro Assumptions</h3>
+          <label>
+            Long term inflation (%)
+            <input type="number" id="inflationAssumption" step="0.1" value="2.0" />
+          </label>
+          <label>
+            Salary growth per year (%)
+            <input type="number" id="salaryGrowthAssumption" step="0.1" value="3.0" />
+          </label>
+          <label>
+            Retirement withdrawal rate (%)
+            <input type="number" id="withdrawalRateAssumption" step="0.1" value="4.0" />
+          </label>
+        </div>
+      </form>
+
+      <p class="note">
+        Assumptions are for modelling only and are not forecasts. Adjust them to explore different scenarios.
+      </p>
+    </div>
+  </div>
+</section>
+
+</main> <footer class="app-footer"> <p> This tool is for educational and illustrative purposes only and does not constitute regulated financial advice. Always consider seeking advice from a regulated adviser before making major financial decisions. </p> </footer> <script src="script.js"></script> </body> </html>
